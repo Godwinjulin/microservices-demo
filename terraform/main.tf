@@ -12,6 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+provider "google" {
+  project = var.gcp_project_id
+  region  = var.region
+}
+
+provider "google-beta" {
+  project = var.gcp_project_id
+  region  = var.region
+}
+
 # Definition of local variables
 locals {
   base_apis = [
@@ -56,6 +66,34 @@ resource "google_container_cluster" "my_cluster" {
   depends_on = [
     module.enable_google_apis
   ]
+}
+
+# GKE cluster
+resource "google_container_cluster" "primary" {
+  name     = var.name
+  location = var.region
+
+  # We can't create a cluster with no node pool defined, but we want to only use
+  # separately managed node pools. So we create the smallest possible default
+  # node pool and immediately delete it.
+  remove_default_node_pool = true
+  initial_node_count       = 1
+}
+
+resource "google_container_node_pool" "primary_nodes" {
+  name     = "${var.name}-node-pool"
+  location = var.region
+  cluster  = google_container_cluster.primary.name
+
+  node_count = 3
+
+  node_config {
+    machine_type = "e2-standard-2"
+
+    oauth_scopes = [
+      "https://www.googleapis.com/auth/cloud-platform"
+    ]
+  }
 }
 
 # Get credentials for cluster
