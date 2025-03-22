@@ -13,8 +13,8 @@
 # limitations under the License.
 
 variable "gcp_project_id" {
-  type        = string
   description = "The GCP project ID to apply this config to"
+  type        = string
 }
 
 variable "name" {
