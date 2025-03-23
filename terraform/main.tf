@@ -126,3 +126,14 @@ resource "null_resource" "wait_conditions" {
     resource.null_resource.apply_deployment
   ]
 }
+
+resource "null_resource" "update_kustomization" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-exc"]
+    command     = "sed -i '' \"s/REDIS_CONNECTION_STRING/10.186.109.179:6379/g\" ../kustomize/components/memorystore/kustomization.yaml"
+  }
+
+  depends_on = [
+    resource.null_resource.apply_deployment
+  ]
+}
