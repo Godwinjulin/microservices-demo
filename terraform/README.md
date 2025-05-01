@@ -1,4 +1,48 @@
-<!-- Copyright 2022 Google LLC
+resource "null_resource" "update_kustomization" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-exc"]
+    command     = <<-EOT
+      KUSTOMIZE_PATH="${path.module}/../kustomize/components/memorystore/kustomization.yaml"
+      if [ ! -f "$KUSTOMIZE_PATH" ]; then
+        echo "Error: Kustomization file not found at $KUSTOMIZE_PATH"
+        exit 1
+      fi
+      sed -i '' "s|REDIS_CONNECTION_STRING|${var.redis_connection_string}|g" "$KUSTOMIZE_PATH"
+    EOT
+  }
+
+  triggers = {
+    kustomize_content = filemd5("${path.module}/../kustomize/components/memorystore/kustomization.yaml")
+  }
+
+  depends_on = [
+    resource.null_resource.apply_deployment
+  ]
+}resource "null_resource" "update_kustomization" {
+  provisioner "local-exec" {
+    interpreter = ["bash", "-exc"]
+    command     = <<-EOT
+      KUSTOMIZE_PATH="${path.module}/../kustomize/components/memorystore/kustomization.yaml"
+      if [ ! -f "$KUSTOMIZE_PATH" ]; then
+        echo "Error: Kustomization file not found at $KUSTOMIZE_PATH"
+        exit 1
+      fi
+      sed -i '' "s|REDIS_CONNECTION_STRING|${var.redis_connection_string}|g" "$KUSTOMIZE_PATH"
+    EOT
+  }
+
+  triggers = {
+    kustomize_content = filemd5("${path.module}/../kustomize/components/memorystore/kustomization.yaml")
+  }
+
+  depends_on = [
+    resource.null_resource.apply_deployment
+  ]
+}variable "redis_connection_string" {
+  description = "Redis connection string for Memorystore"
+  type        = string
+  default     = "10.186.109.179:6379"  # Default value from original code
+}<!-- Copyright 2022 Google LLC
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

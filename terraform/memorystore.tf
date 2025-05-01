@@ -34,7 +34,7 @@ resource "google_redis_instance" "redis-cart" {
 resource "null_resource" "kustomization-update" {
   provisioner "local-exec" {
     interpreter = ["bash", "-exc"]
-    command     = "sed -i '' \"s|REDIS_CONNECTION_STRING|${google_redis_instance.redis-cart[0].host}:${google_redis_instance.redis-cart[0].port}|g\" ../kustomize/components/memorystore/kustomization.yaml"
+    command     = "if [ -n \"${google_redis_instance.redis-cart[0].host}\" ]; then sed -i '' \"s|REDIS_CONNECTION_STRING|${google_redis_instance.redis-cart[0].host}:${google_redis_instance.redis-cart[0].port}|g\" ../kustomize/components/memorystore/kustomization.yaml; fi"
   }
 
   count = var.memorystore ? 1 : 0
@@ -45,6 +45,6 @@ resource "null_resource" "kustomization-update" {
 
   # Add triggers to ensure the provisioner runs when Redis instance changes
   triggers = {
-    redis_instance = google_redis_instance.redis-cart[0].host
+    redis_instance = var.memorystore ? google_redis_instance.redis-cart[0].host : ""
   }
 }
